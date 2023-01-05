@@ -1,0 +1,141 @@
+#include <iostream>
+#include <list>
+#include <string>
+
+using namespace std;
+
+struct Person {
+  string name;
+};
+
+struct BirthCity {
+  string city;
+};
+
+struct PersonNode {
+  Person info;
+  PersonNode* next;
+};
+
+struct BirthCityNode {
+  BirthCity info;
+  list<PersonNode*> names;
+  BirthCityNode* next;
+};
+
+using PersonAddress = PersonNode*;
+using BirthCityAddress = BirthCityNode*;
+
+PersonAddress searchNames(PersonAddress& L, string name) {
+  PersonAddress p = L;
+  while (p != nullptr) {
+    if (p->info.name == name) return p;
+    p = p->next;
+  }
+  return nullptr;
+}
+
+BirthCityAddress searchBirthCity(BirthCityAddress& L, string city) {
+  BirthCityAddress p = L;
+  while (p != nullptr) {
+    if (p->info.city == city) return p;
+    p = p->next;
+  }
+  return nullptr;
+}
+
+void addPerson(PersonAddress& L, string name) {
+  PersonAddress p = new PersonNode{name};
+  p->next = L;
+  L = p;
+}
+
+void addBirthCity(BirthCityAddress& L, string city) {
+  BirthCityAddress p = new BirthCityNode{city};
+  p->next = L;
+  L = p;
+}
+
+void addRelation(BirthCityAddress& cityList, PersonAddress& nameList, string city, string name) {
+  BirthCityAddress cityNode = searchBirthCity(cityList, city);
+  PersonAddress nameNode = searchNames(nameList, name);
+  cityNode->names.push_back(nameNode);
+}
+
+void removePerson(PersonAddress& L, string name) {
+  PersonAddress p = searchNames(L, name);
+  if (p == nullptr) return;
+  PersonAddress q = L;
+  if (p == L) {
+    L = p->next;
+  } else {
+    while (q->next != p) {
+      q = q->next;
+    }
+    q->next = p->next;
+  }
+  delete p;
+}
+
+void displayPeople(PersonAddress& L) {
+  PersonAddress p = L;
+  while (p != nullptr) {
+    cout << p->info.name << endl;
+    p = p->next;
+  }
+}
+
+void displayBirthCities(BirthCityAddress& L) {
+  BirthCityAddress p = L;
+  while (p != nullptr) {
+    cout << p->info.city << endl;
+    p = p->next;
+  }
+}
+
+void displayPeopleInBirthCity(BirthCityAddress& L, string city) {
+  BirthCityAddress p = searchBirthCity(L, city);
+  if (p == nullptr) return;
+  cout << "People birthed in " << city << ":" << endl;
+  for (auto nameNode : p->names) {
+    cout << nameNode->info.name << endl;
+  }
+}
+
+int main() {
+  PersonAddress nameList = nullptr;
+  BirthCityAddress cityList = nullptr;
+  
+  addPerson(nameList, "John");
+  addPerson(nameList, "Jane");
+  addPerson(nameList, "Bob");
+  
+  addBirthCity(cityList, "New York");
+  addBirthCity(cityList, "Chicago");
+  
+  addRelation(cityList, nameList, "New York", "John");
+  addRelation(cityList, nameList, "New York", "Jane");
+  addRelation(cityList, nameList, "Chicago", "Bob");
+
+  cout << "List of people:" << endl;
+  displayPeople(nameList);
+  cout << endl;
+
+  cout << "List of birth cities:" << endl;
+  displayBirthCities(cityList);
+  cout << endl;
+  
+  displayPeopleInBirthCity(cityList, "New York");
+  cout << endl;
+
+  displayPeopleInBirthCity(cityList, "Chicago");
+  cout << endl;
+
+  removePerson(nameList, "Bob");
+
+  cout << "List of people after deleting Bob:" << endl;
+  displayPeople(nameList);
+  cout << endl;
+
+  return 0;    
+}
